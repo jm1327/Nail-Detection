@@ -23,33 +23,38 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/output"
 
-weights=("yolov5n.pt" "yolov5m.pt")
-names=("yolov5n" "yolov5m")
+weights=("yolov5m.pt")
+names=("yolov5m")
+datasets=("/workspace/data/yolo_sub_split/dataset.yaml")
+dataset_sizes=(640)
+dataset_tags=("img320")
 optimizers=("SGD")
-batches=(8 16)
+batches=(8)
 
 for i in "${!weights[@]}"; do
-	for optimizer in "${optimizers[@]}"; do
-		for batch in "${batches[@]}"; do
-			exp_name="${names[$i]}_${optimizer}_b${batch}"
+	for d in "${!datasets[@]}"; do
+		for optimizer in "${optimizers[@]}"; do
+			for batch in "${batches[@]}"; do
+				exp_name="${names[$i]}_${dataset_tags[$d]}_img${dataset_sizes[$d]}_${optimizer}_b${batch}"
 
-			docker run --rm \
-				"${USER_ARGS[@]}" \
-				--shm-size 8G \
-				--gpus=all \
-				-v "$PROJECT_ROOT:/workspace" \
-				-t waikatodatamining/pytorch-yolov5:2022-11-05_cuda11.1 \
-				yolov5_train \
-				--img 640 \
-				--batch $batch \
-				--epochs 150 \
-				--data /workspace/data/yolo_sub_split/dataset.yaml \
-				--weights /workspace/models/${weights[$i]} \
-				--project /workspace/output \
-				--name "$exp_name" \
-				--optimizer "$optimizer" \
-				--patience 20 \
-				--exist-ok || record_failure "yolov5:$exp_name" "$?"
+				docker run --rm \
+					"${USER_ARGS[@]}" \
+					--shm-size 8G \
+					--gpus=all \
+					-v "$PROJECT_ROOT:/workspace" \
+					-t waikatodatamining/pytorch-yolov5:2022-11-05_cuda11.1 \
+					yolov5_train \
+					--img "${dataset_sizes[$d]}" \
+					--batch "$batch" \
+					--epochs 150 \
+					--data "${datasets[$d]}" \
+					--weights "/workspace/models/${weights[$i]}" \
+					--project /workspace/output \
+					--name "$exp_name" \
+					--optimizer "$optimizer" \
+					--patience 20 \
+					--exist-ok || record_failure "yolov5:$exp_name" "$?"
+			done
 		done
 	done
 done

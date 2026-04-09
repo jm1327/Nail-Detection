@@ -23,12 +23,13 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/cache" "$PROJECT_ROOT/config" "$PROJECT_ROOT/output"
 
-weights=("yolo26n.pt" "yolo26s.pt" "yolo26m.pt" "yolo26l.pt")
-names=("yolo26n" "yolo26s" "yolo26m" "yolo26l")
-datasets=("/workspace/data/yolo_sub_split/dataset.yaml" "/workspace/data/coco_sub_split/dataset.yaml")
-dataset_sizes=(640 800)
+weights=("yolo26l.pt" "yolo26m.pt")
+names=("yolo26l" "yolo26m")
+datasets=("/workspace/data/yolo_sub_split/dataset.yaml")
+dataset_sizes=(640)
+dataset_tags=("sub640")
 optimizers=("auto")
-batches=(4 8 16)
+batches=(8)
 
 exp_id=0
 
@@ -37,7 +38,7 @@ for i in "${!weights[@]}"; do
 		for optimizer in "${optimizers[@]}"; do
 			for batch in "${batches[@]}"; do
 				exp_id=$((exp_id + 1))
-				exp_name="${names[$i]}_img${dataset_sizes[$d]}_${optimizer}_b${batch}"
+				exp_name="${names[$i]}_${dataset_tags[$d]}_img${dataset_sizes[$d]}_${optimizer}_b${batch}"
 
 				echo "Running experiment $exp_id: $exp_name"
 
@@ -62,6 +63,10 @@ for i in "${!weights[@]}"; do
 					batch=$batch \
 					epochs=150 \
 					mosaic=0 \
+					conf=0.001 \
+					save_txt=True \
+					save_conf=True \
+					save_json=True \
 					|| record_failure "yolo26:$exp_name" "$?"
 			done
 		done

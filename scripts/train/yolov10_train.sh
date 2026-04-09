@@ -23,18 +23,19 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/output"
 
-weights=("yolov10m.pt")
-names=("yolov10m")
+weights=("yolov10n.pt" "yolov10m.pt")
+names=("yolov10n" "yolov10m")
 datasets=("/workspace/data/yolo_sub_split/dataset.yaml")
 dataset_sizes=(640)
+dataset_tags=("img640")
 optimizers=("auto")
-batches=(8 16)
+batches=(8)
 
 for i in "${!weights[@]}"; do
 	for d in "${!datasets[@]}"; do
 		for optimizer in "${optimizers[@]}"; do
 			for batch in "${batches[@]}"; do
-				exp_name="${names[$i]}_${optimizer}_b${batch}"
+					exp_name="${names[$i]}_${dataset_tags[$d]}_img${dataset_sizes[$d]}_${optimizer}_b${batch}"
 
 				docker run --rm \
 					"${USER_ARGS[@]}" \
@@ -44,8 +45,8 @@ for i in "${!weights[@]}"; do
 					-t waikatodatamining/pytorch-yolov10:2024-06-23_cuda11.7 \
 					yolov10_train \
 					model=/workspace/models/${weights[$i]} \
-					data=${datasets[$d]} \
-					imgsz=${dataset_sizes[$d]} \
+					data="${datasets[$d]}" \
+					imgsz="${dataset_sizes[$d]}" \
 					exist_ok=true \
 					project=/workspace/output \
 					name="$exp_name" \
