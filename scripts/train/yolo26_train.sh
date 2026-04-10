@@ -23,13 +23,13 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/cache" "$PROJECT_ROOT/config" "$PROJECT_ROOT/output"
 
-weights=("yolo26l.pt" "yolo26m.pt")
-names=("yolo26l" "yolo26m")
-datasets=("/workspace/data/yolo_sub_split/dataset.yaml")
-dataset_sizes=(640)
-dataset_tags=("sub640")
+weights=("yolo26n.pt" "yolo26s.pt" "yolo26m.pt" "yolo26l.pt"  "yolo26x.pt")
+names=("yolo26n" "yolo26s" "yolo26m" "yolo26l" "yolo26x")
+datasets=("/workspace/data/yolo_sub_split/dataset.yaml" "/workspace/data/yolo_sub_split_320/dataset.yaml" "/workspace/data/yolo_sub_split_800/dataset.yaml")
+dataset_sizes=(640 640 800)
+dataset_tags=("sub640" "sub320" "sub800")
 optimizers=("auto")
-batches=(8)
+batches=(4 8)
 
 exp_id=0
 

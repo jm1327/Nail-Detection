@@ -25,11 +25,11 @@ mkdir -p "$PROJECT_ROOT/output"
 
 weights=("yolov10n.pt" "yolov10m.pt")
 names=("yolov10n" "yolov10m")
-datasets=("/workspace/data/yolo_sub_split/dataset.yaml")
-dataset_sizes=(640)
-dataset_tags=("img640")
+datasets=("/workspace/data/yolo_sub_split/dataset.yaml" "/workspace/data/yolo_sub_split_320/dataset.yaml" "/workspace/data/yolo_sub_split_800/dataset.yaml")
+dataset_sizes=(640 640 800)
+dataset_tags=("sub640" "sub320" "sub800")
 optimizers=("auto")
-batches=(8)
+batches=(4 8)
 
 for i in "${!weights[@]}"; do
 	for d in "${!datasets[@]}"; do

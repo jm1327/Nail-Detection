@@ -23,8 +23,8 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/cache" "$PROJECT_ROOT/output"
 
-model_names=("r50_fpn")
-pretrain_weights=("/workspace/models/faster_rcnn_r50_fpn_1x_coco.pdparams")
+model_names=("r50_fpn" "r101_vd_fpn")
+pretrain_weights=("/workspace/models/faster_rcnn_r50_fpn_1x_coco.pdparams" "/workspace/models/faster_rcnn_r101_vd_fpn_1x_coco.pdparams")
 base_lrs=(0.01)
 train_batch_sizes=(1)
 
