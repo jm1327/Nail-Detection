@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Usage: run this script from the repository root or any shell with Bash support.
+# It launches a batch of YOLOv10 training jobs in Docker and writes outputs under /workspace/output.
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,11 +26,21 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/output"
 
+# Parameter selection:
+# - weights: pretrained YOLOv10 checkpoints to evaluate/train, e.g. yolov10n.pt or yolov10m.pt
+# - names: experiment names matched to weights, e.g. yolov10n, yolov10m
+# - datasets: dataset YAML files to use, e.g. /workspace/data/yolo_sub_split/dataset.yaml
+# - dataset_sizes: input image sizes for each dataset, e.g. 640 or 800
+# - dataset_tags: short labels used in experiment names, e.g. sub640, sub320, sub800
+# - optimizers: optimizer choice for training, e.g. auto
+# - batches: batch sizes to try, e.g. 4 or 8
 weights=("yolov10n.pt" "yolov10m.pt")
 names=("yolov10n" "yolov10m")
+
 datasets=("/workspace/data/yolo_sub_split/dataset.yaml" "/workspace/data/yolo_sub_split_320/dataset.yaml" "/workspace/data/yolo_sub_split_800/dataset.yaml")
 dataset_sizes=(640 640 800)
 dataset_tags=("sub640" "sub320" "sub800")
+
 optimizers=("auto")
 batches=(4 8)
 

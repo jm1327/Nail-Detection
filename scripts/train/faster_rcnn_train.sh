@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Usage: run this script from the repository root or any shell with Bash support.
+# It launches Faster R-CNN training jobs in Docker and writes outputs under /workspace/output.
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,6 +26,11 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/cache" "$PROJECT_ROOT/output"
 
+# Parameter selection:
+# - model_names: Faster R-CNN backbone names to export/train, e.g. r50_fpn or r101_vd_fpn
+# - pretrain_weights: pretrained PaddleDetection weights matched to model_names, e.g. faster_rcnn_r50_fpn_1x_coco.pdparams
+# - base_lrs: base learning rates to test, e.g. 0.01
+# - train_batch_sizes: batch sizes for training, e.g. 1
 model_names=("r50_fpn" "r101_vd_fpn")
 pretrain_weights=("/workspace/models/faster_rcnn_r50_fpn_1x_coco.pdparams" "/workspace/models/faster_rcnn_r101_vd_fpn_1x_coco.pdparams")
 base_lrs=(0.01)

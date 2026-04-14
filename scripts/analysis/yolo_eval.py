@@ -6,7 +6,7 @@ from ultralytics import YOLO
 # =========================
 # 配置
 # =========================
-VAL_CONF = 0.38
+VAL_CONF = 0.33
 VAL_IOU = 0.5
 DATASET = "val"
 

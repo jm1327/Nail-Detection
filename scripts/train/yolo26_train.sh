@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Usage: run this script from the repository root or any shell with Bash support.
+# It launches a batch of YOLO26 training jobs in Docker and writes outputs under /workspace/output.
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,6 +26,14 @@ record_failure() {
 
 mkdir -p "$PROJECT_ROOT/cache" "$PROJECT_ROOT/config" "$PROJECT_ROOT/output"
 
+# Parameter selection:
+# - weights: pretrained YOLO26 checkpoints to evaluate/train, e.g. yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26l.pt, yolo26x.pt
+# - names: experiment names matched to weights, e.g. yolo26n, yolo26s, yolo26m
+# - datasets: dataset YAML files to use, e.g. /workspace/data/yolo_sub_split/dataset.yaml
+# - dataset_sizes: input image sizes for each dataset, e.g. 640 or 800
+# - dataset_tags: short labels used in experiment names, e.g. sub640, sub320, sub800
+# - optimizers: optimizer choice for training, e.g. auto
+# - batches: batch sizes to try, e.g. 4 or 8
 weights=("yolo26n.pt" "yolo26s.pt" "yolo26m.pt" "yolo26l.pt"  "yolo26x.pt")
 names=("yolo26n" "yolo26s" "yolo26m" "yolo26l" "yolo26x")
 datasets=("/workspace/data/yolo_sub_split/dataset.yaml" "/workspace/data/yolo_sub_split_320/dataset.yaml" "/workspace/data/yolo_sub_split_800/dataset.yaml")
