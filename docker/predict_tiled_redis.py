@@ -17,7 +17,7 @@ from wai.common.geometry import Point as WaiPoint, Polygon as WaiPolygon
 
 
 # ---------------------------------------------------------------------------
-# opex <-> idc 转换（用于调用 idc_merge_polygons）
+# opex <-> idc conversion (used to call idc_merge_polygons)
 # ---------------------------------------------------------------------------
 def _opex_to_located_objects(opex_preds: List[ObjectPrediction]) -> LocatedObjects:
     lobjs = []
@@ -59,7 +59,7 @@ def _located_objects_to_opex(lobjs: LocatedObjects) -> List[ObjectPrediction]:
 
 
 # ---------------------------------------------------------------------------
-# 核心推理函数
+# Core inference function
 # ---------------------------------------------------------------------------
 def predict_tiled_opex(model_params: ModelParams, pred_id: str, img: Image.Image,
                        confidence_threshold: float = 0.25,
@@ -74,7 +74,7 @@ def predict_tiled_opex(model_params: ModelParams, pred_id: str, img: Image.Image
     img_w, img_h = img.size
     logger = logging.getLogger(__name__)
 
-    # 1. 用原版 generate_regions 生成 tile 坐标（行为与 meta-sub-images 完全一致）
+    # 1. Use the original generate_regions to build tile coordinates (matches meta-sub-images behavior exactly)
     regions = generate_regions(
         width=img_w, height=img_h,
         row_height=row_height, col_width=col_width,
@@ -83,23 +83,23 @@ def predict_tiled_opex(model_params: ModelParams, pred_id: str, img: Image.Image
         logger=logger,
     )
 
-    # 2. 裁切所有 tile
+    # 2. Crop all tiles
     tiles = []
     for r in regions:
         x0, y0 = r.x, r.y
         x1 = min(x0 + r.w, img_w)
         y1 = min(y0 + r.h, img_h)
         tile = img.crop((x0, y0, x1, y1))
-        tiles.append((tile, x0, y0, x1 - x0, y1 - y0))  # (图, x偏移, y偏移, 实际宽, 实际高)
+        tiles.append((tile, x0, y0, x1 - x0, y1 - y0))  # (image, x offset, y offset, actual width, actual height)
 
     classes_set = set(classes) if classes else set(model_params.names.values())
 
-    # 3. 批量推理（一次 GPU forward）
+    # 3. Batch inference (one GPU forward pass)
     tile_imgs = [t[0] for t in tiles]
     with torch.no_grad():
         all_preds = model_params.model.predict(source=tile_imgs, augment=augment, verbose=False)
 
-    # 4. 把子图坐标映射回原图（对应 transfer_region 逻辑）
+    # 4. Map sub-image coordinates back to the original image (matches transfer_region logic)
     all_opex_preds: List[ObjectPrediction] = []
     for pred, (_, x_off, y_off, tile_w, tile_h) in zip(all_preds, tiles):
         for box in pred.boxes:
@@ -112,12 +112,12 @@ def predict_tiled_opex(model_params: ModelParams, pred_id: str, img: Image.Image
                 continue
 
             xyxyn = box.xyxyn.numpy()[0]
-            # tile 内像素坐标 + 偏移 = 原图坐标
+            # tile pixel coordinates + offset = original image coordinates
             left   = int(xyxyn[0] * tile_w) + x_off
             top    = int(xyxyn[1] * tile_h) + y_off
             right  = int(xyxyn[2] * tile_w) + x_off
             bottom = int(xyxyn[3] * tile_h) + y_off
-            # 裁掉超出原图边界的部分
+            # Clamp anything outside the original image bounds
             left   = max(0, min(left,   img_w - 1))
             top    = max(0, min(top,    img_h - 1))
             right  = max(0, min(right,  img_w))
@@ -134,7 +134,7 @@ def predict_tiled_opex(model_params: ModelParams, pred_id: str, img: Image.Image
                 score=conf, label=label, bbox=bbox, polygon=poly,
             ))
 
-    # 5. 合并重叠预测（直接调用 idc merge_polygons，与 meta-sub-images 行为一致）
+    # 5. Merge overlapping predictions (directly calls idc merge_polygons, matching meta-sub-images behavior)
     dummy_img_bytes = io.BytesIO()
     img.save(dummy_img_bytes, format="JPEG")
     od_item = ObjectDetectionData(
